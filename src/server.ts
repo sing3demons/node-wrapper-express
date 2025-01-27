@@ -1,12 +1,8 @@
-import express from 'express'
-import userRouter from './users/user'
+import AppServer from '@/lib/serve'
 import productRouter from './product/product.route'
+ 
+const app = new AppServer()
 
-const app = express()
+app.router(productRouter)
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use('/users', userRouter)
-app.use('/products', productRouter)
-
-export default app
+export default app.register()

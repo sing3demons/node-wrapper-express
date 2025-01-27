@@ -1,56 +1,42 @@
-import { Request, Response } from 'express'
-import { IProductService } from './product.service'
-import { createProductDTO } from './product.model'
+import ProductService from './product.service'
+import { createProductSchema } from './product.model'
 
-export interface IProductHandler {
-  createProduct(req: Request, res: Response): Promise<void>
-  fetchProducts(req: Request, res: Response): Promise<void>
-  fetchProductById(req: Request, res: Response): Promise<void>
-}
+import { getMongoClient } from '@/db'
+import ProductRepository from './product.repository'
+import { Router } from '@/lib/serve'
 
-export default class ProductHandler {
-  constructor(private productService: IProductService) {}
+const productDb = getMongoClient('product')
+const productCollection = productDb.collection('product')
+const productRepository = new ProductRepository(productCollection)
+const productService = new ProductService(productRepository)
 
-  async createProduct(req: Request<any, createProductDTO, createProductDTO, any>, res: Response) {
-    try {
-      const product = await this.productService.createProduct(req.body)
-      res.status(201).json(product)
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message })
-      } else {
-        res.status(500).json({ message: 'An error occurred while creating a product' })
-      }
-    }
+const productHandler = Router()
+
+productHandler.post(
+  '/',
+  async (ctx) => {
+    const product = await productService.createProduct(ctx.body)
+    ctx.response(201, product)
+  },
+  {
+    schema: {
+      body: createProductSchema,
+    },
   }
+)
 
-  async fetchProducts(req: Request, res: Response) {
-    try {
-      const products = await this.productService.getProducts()
-      res.status(200).json(products)
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message })
-      } else {
-        res.status(500).json({ message: 'An error occurred while fetching products' })
-      }
-    }
-  }
+productHandler.get('/', async (ctx) => {
+  const products = await productService.getProducts()
+  ctx.response(200, products)
+})
 
-  async fetchProductById(req: Request, res: Response) {
-    try {
-      const product = await this.productService.getProductById(req.params.id)
-      if (!product) {
-        res.status(404).json({ message: 'Product not found' })
-        return
-      }
-      res.status(200).json(product)
-    } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message })
-      } else {
-        res.status(500).json({ message: 'An error occurred while fetching product' })
-      }
-    }
+productHandler.get('/:id', async (ctx) => {
+  const product = await productService.getProductById(ctx.params.id)
+  if (!product) {
+    ctx.response(404, { message: 'Product not found' })
+    return
   }
-}
+  ctx.response(200, product)
+})
+
+export default productHandler
