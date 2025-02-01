@@ -121,11 +121,14 @@ router.delete('/x/:id', deleteX)
 router.patch('/x/:id', patchX)
 router.get('/x', getX)
 
-const server = new AppServer()
-server.router(router)
-
 describe('Serve', () => {
+  const server = new AppServer()
+  server.router(router)
   const app = server.register()
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
 
   it('should return 200 when get product', async () => {
     const response = await supertest(app).get('/')
@@ -215,6 +218,12 @@ describe('Serve', () => {
 })
 
 describe('Serve group', () => {
+  const server = new AppServer()
+  server.router(router)
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
   router.get(
     '/xx',
     async (ctx) => {

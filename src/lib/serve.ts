@@ -205,52 +205,44 @@ export default class AppServer extends AppRouter {
   }
 
   private validatorFactory(req: CtxSchema, schema: CtxSchema) {
-    try {
-      const errors = []
-      if (schema.body) {
-        const C = TypeCompiler.Compile(schema.body as TObject)
-        const isValid = C.Check(req.body)
-        if (!isValid) {
-          errors.push(...[...C.Errors(req.body)].map((e) => ({ type: 'body', path: e.path, message: e.message })))
-        }
+    const errors = []
+    if (schema.body) {
+      const C = TypeCompiler.Compile(schema.body as TObject)
+      const isValid = C.Check(req.body)
+      if (!isValid) {
+        errors.push(...[...C.Errors(req.body)].map((e) => ({ type: 'body', path: e.path, message: e.message })))
       }
+    }
 
-      if (schema.params) {
-        const C = TypeCompiler.Compile(schema.params as TObject)
-        const isValid = C.Check(req.params)
-        if (!isValid) {
-          errors.push(...[...C.Errors(req.params)].map((e) => ({ type: 'params', path: e.path, message: e.message })))
-        }
+    if (schema.params) {
+      const C = TypeCompiler.Compile(schema.params as TObject)
+      const isValid = C.Check(req.params)
+      if (!isValid) {
+        errors.push(...[...C.Errors(req.params)].map((e) => ({ type: 'params', path: e.path, message: e.message })))
       }
+    }
 
-      if (schema.query) {
-        const C = TypeCompiler.Compile(schema.query as TObject)
-        const isValid = C.Check(req.query)
-        if (!isValid) {
-          errors.push(...[...C.Errors(req.query)].map((e) => ({ type: 'query', path: e.path, message: e.message })))
-        }
+    if (schema.query) {
+      const C = TypeCompiler.Compile(schema.query as TObject)
+      const isValid = C.Check(req.query)
+      if (!isValid) {
+        errors.push(...[...C.Errors(req.query)].map((e) => ({ type: 'query', path: e.path, message: e.message })))
       }
+    }
 
-      if (schema.headers) {
-        const C = TypeCompiler.Compile(schema.headers as TObject)
-        const isValid = C.Check(req.headers)
-        if (!isValid) {
-          errors.push(...[...C.Errors(req.headers)].map((e) => ({ type: 'headers', path: e.path, message: e.message })))
-        }
+    if (schema.headers) {
+      const C = TypeCompiler.Compile(schema.headers as TObject)
+      const isValid = C.Check(req.headers)
+      if (!isValid) {
+        errors.push(...[...C.Errors(req.headers)].map((e) => ({ type: 'headers', path: e.path, message: e.message })))
       }
+    }
 
-      const isError = errors.length > 0 ? true : false
-      return {
-        err: isError,
-        desc: isError ? 'invalid_request' : 'success',
-        data: errors,
-      }
-    } catch (error) {
-      return {
-        err: true,
-        desc: 'unknown_error',
-        data: [error],
-      }
+    const isError = errors.length > 0 ? true : false
+    return {
+      err: isError,
+      desc: isError ? 'invalid_request' : 'success',
+      data: errors,
     }
   }
 
@@ -314,46 +306,31 @@ export default class AppServer extends AppRouter {
     return this._express as Express
   }
 
-  public listen(port: number, callback: (err?: Error) => void) {
-    if (!this._express) {
-      throw new Error('App is not initialized')
+  public listen(port: number, callback?: (err?: Error) => void) {
+    if (this._routes.length !== 0) {
+      this.register()
     }
-    if (this._express) {
-      if (this._routes.length !== 0) {
-        this.register()
-      }
-      const server = http.createServer(this._express).listen(port, callback)
+    const server = http.createServer(this._express).listen(port, callback)
 
-      const connections = new Set<Socket>()
-      server.on('connection', (connection) => {
-        connections.add(connection)
-        connection.on('close', () => {
-          connections.delete(connection)
+    const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT'] as const
+    signals.forEach((signal) => {
+      process.on(signal, () => {
+        console.log(`Received ${signal}. Closing server.`)
+        server.close(() => {
+          console.log('Server closed.')
+          if (callback) callback()
+          process.exit(0)
         })
-      })
 
-      const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT'] as const
-      signals.forEach((signal) => {
-        process.on(signal, () => {
-          console.log(`Received ${signal}. Closing server.`)
-          server.close(() => {
-            console.log('Server closed.')
-            callback?.()
-            process.exit(0)
-          })
+        setTimeout(() => {
+          console.log('Could not close server in time. Forcing shutdown.')
 
-          setTimeout(() => {
-            console.log('Could not close server in time. Forcing shutdown.')
-            connections.forEach((connection) => {
-              connection.destroy()
-            })
-            callback?.()
-            process.exit(1)
-          }, 10000)
-        })
+          callback?.()
+          process.exit(1)
+        }, 10000)
       })
-      return server
-    }
+    })
+    return server
   }
 }
 

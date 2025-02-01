@@ -1,7 +1,8 @@
 import request from 'supertest'
-import app from '../server'
+import server from '../server'
 import { UserModel } from './user'
 
+const app = server.register()
 describe('User', () => {
   it('should get all users', async () => {
     jest.spyOn(UserModel, 'find').mockResolvedValue([])
