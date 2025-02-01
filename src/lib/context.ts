@@ -356,7 +356,7 @@ export type Context<Route extends CtxSchema = {}, Path extends string | undefine
     headers: HTTPHeaders
     status?: number | keyof StatusMap
     redirect?: string
-    cookie?: Record<string, Cookie>
+    cookie?: Record<string, any>
   }
 
   response(
@@ -399,7 +399,7 @@ export type Ctx<Route extends CtxSchema = {}> = Prettify<{
     headers: HTTPHeaders
     status?: number | keyof StatusMap
     redirect?: string
-    cookie?: Record<string, Cookie>
+    cookie?: Record<string, any>
   }
 
   response(

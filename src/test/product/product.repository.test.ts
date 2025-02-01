@@ -1,4 +1,4 @@
-import { Collection, MongoClient, ObjectId } from 'mongodb'
+import { Collection, MongoClient, MongoServerError, ObjectId } from 'mongodb'
 import ProductRepository, { IProductRepository } from '../../product/product.repository'
 // import { mock } from 'jest-mock-extended'
 
@@ -48,6 +48,91 @@ describe('ProductRepository', () => {
       //   expect(mockCollection.insertOne).toHaveBeenCalledWith(body)
       expect(insertOneSpy).toHaveBeenCalledWith(body)
     })
+
+    it('should return insertedId undefined', async () => {
+      const body = {
+        name: 'product 1',
+        price: 100,
+        description: 'description 1',
+      }
+
+      mockCollection.insertOne = jest.fn().mockResolvedValueOnce({ insertedId: undefined })
+
+      // to be throw error
+      expect(productRepository.create(body)).rejects.toThrow('An error occurred while creating a product')
+    })
+
+    it('should throw error', async () => {
+      // Arrange
+      const body = {
+        name: 'product 1',
+        price: 100,
+        description: 'description 1',
+      }
+
+      const error = new Error('Error message')
+
+      mockCollection.insertOne = jest.fn().mockRejectedValueOnce(error)
+
+      // Act
+      try {
+        await productRepository.create(body)
+      } catch (e) {
+        // Assert
+        expect(e).toEqual(error)
+      }
+
+      expect(mockCollection.insertOne).toHaveBeenCalledWith(body)
+    })
+  })
+
+  it('should throw MongoServerError', async () => {
+    // Arrange
+    const body = {
+      name: 'product 1',
+      price: 100,
+      description: 'description 1',
+    }
+
+    const error = new MongoServerError({
+      code: 11000,
+      message: 'Error message',
+    })
+
+    mockCollection.insertOne = jest.fn().mockRejectedValueOnce(error)
+
+    // Act
+    try {
+      await productRepository.create(body)
+    } catch (e) {
+      // Assert
+      expect(e).toEqual(error)
+    }
+
+    expect(mockCollection.insertOne).toHaveBeenCalledWith(body)
+  })
+
+  it('should throw any', async () => {
+    // Arrange
+    const body = {
+      name: 'product 1',
+      price: 100,
+      description: 'description 1',
+    }
+
+    mockCollection.insertOne = jest.fn().mockRejectedValueOnce({
+      message: 'An error occurred while creating a product',
+    })
+
+    // Act
+    try {
+      await productRepository.create(body)
+    } catch (e) {
+      // Assert
+      expect(e).toEqual(new Error('An error occurred while creating a product'))
+    }
+
+    expect(mockCollection.insertOne).toHaveBeenCalledWith(body)
   })
 
   describe('getProducts', () => {
@@ -115,6 +200,17 @@ describe('ProductRepository', () => {
         description: product.description,
       })
       expect(mockCollection.findOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(id) })
+    })
+
+    it('should return null', async () => {
+      const id = '67962e06705d207a9c259848'
+      // mockCollection.findOne = jest.fn().mockResolvedValueOnce(null)
+      const spyFindOne = jest.spyOn(mockCollection, 'findOne').mockResolvedValueOnce(null)
+
+      const result = await productRepository.getProductById(id)
+
+      expect(result).toBeNull()
+      expect(spyFindOne).toHaveBeenCalledWith({ _id: ObjectId.createFromHexString(id) })
     })
   })
 })

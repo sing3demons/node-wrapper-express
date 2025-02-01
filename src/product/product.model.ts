@@ -16,11 +16,11 @@ export const createProductSchema = Type.Object({
 
 export type createProductDTO = Static<typeof createProductSchema>
 
-export class ProductError extends Error {
-  status?: number
-  constructor(message: string, status?: number) {
-    super(message)
-    this.name = 'ProductError'
-    this.status = status
-  }
-}
+// export class ProductError extends Error {
+//   status?: number
+//   constructor(message: string, status?: number) {
+//     super(message)
+//     this.name = 'ProductError'
+//     this.status = status
+//   }
+// }

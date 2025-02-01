@@ -1,5 +1,5 @@
+import { Router } from '@/lib/serve'
 import mongoose from 'mongoose'
-import express from 'express'
 
 const userSchema = new mongoose.Schema({
   name: String,
@@ -9,18 +9,19 @@ const userSchema = new mongoose.Schema({
 
 export const UserModel = mongoose.model('User', userSchema)
 
-const userRouter = express.Router()
+const userRouter = Router()
 
-userRouter.get('/', async (_, res) => {
+userRouter.get('/', async (ctx) => {
   const users = await UserModel.find()
   console.log('users', users)
-  res.json(users)
+  ctx.response(200, users)
 })
 
-userRouter.post('/', async (req, res) => {
-  const user = new UserModel(req.body)
+userRouter.post('/', async (ctx) => {
+  const user = new UserModel(ctx.body)
   await user.save()
-  res.json(user)
+
+  ctx.response(201, user)
 })
 
-export default userRouter
+export default userRouter.Router('users')

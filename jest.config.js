@@ -11,7 +11,11 @@ const config = {
   },
   preset: 'ts-jest',
   coveragePathIgnorePatterns: ['/node_modules/', 'dist'],
-  coverageReporters: ['json', 'html'],
+  coverageReporters: ['text', 'lcov', 'clover', 'html'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.git/'],
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  }
 }
 
 module.exports = config

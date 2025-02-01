@@ -62,10 +62,7 @@ export class AppRouter implements IAppRouter {
   protected _routes: InternalRoute[] = []
 
   private add(method: HttpMethod, path: string, handler: InlineHandler<any, any>, hook?: MiddlewareRoute<any>) {
-    if (!path.startsWith('/')) {
-      path = `/${path}`
-    }
-    this._routes.push({ method, path, handler, hook })
+    this._routes.push({ method, path: path.startsWith('/') ? path : `/${path}`, handler, hook })
     return this
   }
 
@@ -295,16 +292,16 @@ export default class AppServer extends AppRouter {
 
           const result = await handler(ctx)
 
-          if (ctx.set.status) {
-            res.status(ctx.set.status)
-          }
-
-          if (ctx.set.headers) {
+          if (result && ctx.set.headers) {
             res.set(ctx.set.headers)
           }
 
-          if (ctx.set.cookie) {
+          if (result && ctx.set.cookie) {
             res.cookie(ctx.set.cookie.name, ctx.set.cookie.value, ctx.set.cookie.options)
+          }
+
+          if (result && ctx.set.status) {
+            res.status(ctx.set.status)
           }
 
           if (result) {
