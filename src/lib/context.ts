@@ -429,9 +429,10 @@ export type IExpressCookies = {
   options: CookieOptions
 }
 
-export type InlineHandler<Route extends CtxSchema = {}, Path extends string | undefined = undefined> =
-  | RouteHandler<Route, Path>
-  | RouteHandler<Route, Path>[]
+export type InlineHandler<Route extends CtxSchema = {}, Path extends string | undefined = undefined> = RouteHandler<
+  Route,
+  Path
+>
 
 export type CustomHandler<Route extends CtxSchema = {}> = (context: Ctx<Route>) => Promise<unknown>
 
@@ -454,3 +455,8 @@ export type ContainsWhitespace<T extends string> = T extends
   | `${string}\n${string}`
   ? 'Error: Strings containing whitespace are not allowed'
   : T
+
+export type CustomRouteDefinition<R extends CtxSchema> = {
+  handler: CustomHandler<R>
+  hook?: MiddlewareRoute<R>
+}

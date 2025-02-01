@@ -11,7 +11,7 @@ export const UserModel = mongoose.model('User', userSchema)
 
 const userRouter = express.Router()
 
-userRouter.get('/', async (req, res) => {
+userRouter.get('/', async (_, res) => {
   const users = await UserModel.find()
   console.log('users', users)
   res.json(users)

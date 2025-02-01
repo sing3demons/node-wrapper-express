@@ -7,8 +7,10 @@ import {
   MiddlewareRoute,
   IExpressCookies,
   ContainsWhitespace,
+  CustomHandler,
+  CustomRouteDefinition,
 } from './context'
-import { TObject } from '@sinclair/typebox'
+import { TObject, Type } from '@sinclair/typebox'
 import useragent from 'useragent'
 import { v4, v7 } from 'uuid'
 import { TypeCompiler } from '@sinclair/typebox/compiler'
@@ -16,7 +18,47 @@ import cookieParser from 'cookie-parser'
 import { Socket } from 'net'
 import http from 'http'
 
-export class AppRouter {
+export const HandlerSchema = <T extends CtxSchema>(handler: CustomHandler<T>, hook?: MiddlewareRoute<T>) => ({
+  handler,
+  hook,
+})
+
+export interface IAppRouter {
+  get<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  get<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handler: InlineHandler<R, P>,
+    hook?: MiddlewareRoute<R>
+  ): this
+  post<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  post<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handler: InlineHandler<R, P>,
+    hook?: MiddlewareRoute<R>
+  ): this
+  put<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  put<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handler: InlineHandler<R, P>,
+    hook?: MiddlewareRoute<R>
+  ): this
+  delete<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  delete<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handler: InlineHandler<R, P>,
+    hook?: MiddlewareRoute<R>
+  ): this
+  patch<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  patch<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handler: InlineHandler<R, P>,
+    hook?: MiddlewareRoute<R>
+  ): this
+  getRoutes(): InternalRoute[]
+  Router<T extends string>(group?: ContainsWhitespace<T>): this
+}
+
+export class AppRouter implements IAppRouter {
   protected _routes: InternalRoute[] = []
 
   private add(method: HttpMethod, path: string, handler: InlineHandler<any, any>, hook?: MiddlewareRoute<any>) {
@@ -27,35 +69,90 @@ export class AppRouter {
     return this
   }
 
-  public get = <const P extends string, const R extends CtxSchema>(
+  public get<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  public get<const P extends string, const R extends CtxSchema>(
     path: P,
     handler: InlineHandler<R, P>,
     hook?: MiddlewareRoute<R>
-  ) => this.add(HttpMethod.GET, path, handler, hook)
+  ): this
+  public get<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handlerOrOptions: InlineHandler<R, P> | CustomRouteDefinition<R>,
+    hook?: MiddlewareRoute<R>
+  ) {
+    if (typeof handlerOrOptions === 'function') {
+      return this.add(HttpMethod.GET, path, handlerOrOptions, hook)
+    }
+    return this.add(HttpMethod.GET, path, handlerOrOptions.handler as InlineHandler<any, any>, handlerOrOptions.hook)
+  }
 
-  public post = <const P extends string, const R extends CtxSchema>(
+  public post<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  public post<const P extends string, const R extends CtxSchema>(
     path: P,
     handler: InlineHandler<R, P>,
     hook?: MiddlewareRoute<R>
-  ) => this.add(HttpMethod.POST, path, handler, hook)
+  ): this
+  public post<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handlerOrOptions: InlineHandler<R, P> | CustomRouteDefinition<R>,
+    hook?: MiddlewareRoute<R>
+  ) {
+    if (typeof handlerOrOptions === 'function') {
+      return this.add(HttpMethod.POST, path, handlerOrOptions, hook)
+    }
+    return this.add(HttpMethod.POST, path, handlerOrOptions.handler as InlineHandler<any, any>, handlerOrOptions.hook)
+  }
 
-  public put = <const P extends string, const R extends CtxSchema>(
+  public put<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  public put<const P extends string, const R extends CtxSchema>(
     path: P,
     handler: InlineHandler<R, P>,
     hook?: MiddlewareRoute<R>
-  ) => this.add(HttpMethod.PUT, path, handler, hook)
+  ): this
+  public put<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handlerOrOptions: InlineHandler<R, P> | CustomRouteDefinition<R>,
+    hook?: MiddlewareRoute<R>
+  ) {
+    if (typeof handlerOrOptions === 'function') {
+      return this.add(HttpMethod.PUT, path, handlerOrOptions, hook)
+    }
+    return this.add(HttpMethod.PUT, path, handlerOrOptions.handler as InlineHandler<any, any>, handlerOrOptions.hook)
+  }
 
-  public delete = <const P extends string, const R extends CtxSchema>(
+  public delete<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  public delete<const P extends string, const R extends CtxSchema>(
     path: P,
     handler: InlineHandler<R, P>,
     hook?: MiddlewareRoute<R>
-  ) => this.add(HttpMethod.DELETE, path, handler, hook)
+  ): this
+  public delete<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handler: InlineHandler<R, P> | CustomRouteDefinition<R>,
+    hook?: MiddlewareRoute<R>
+  ) {
+    if (typeof handler === 'function') {
+      return this.add(HttpMethod.DELETE, path, handler, hook)
+    }
+    return this.add(HttpMethod.DELETE, path, handler.handler as InlineHandler<any, any>, handler.hook)
+  }
 
-  public patch = <const P extends string, const R extends CtxSchema>(
+  public patch<const P extends string, const R extends CtxSchema>(path: P, options: CustomRouteDefinition<R>): this
+  public patch<const P extends string, const R extends CtxSchema>(
     path: P,
     handler: InlineHandler<R, P>,
     hook?: MiddlewareRoute<R>
-  ) => this.add(HttpMethod.PATCH, path, handler, hook)
+  ): this
+  public patch<const P extends string, const R extends CtxSchema>(
+    path: P,
+    handler: InlineHandler<R, P> | CustomRouteDefinition<R>,
+    hook?: MiddlewareRoute<R>
+  ) {
+    if (typeof handler === 'function') {
+      return this.add(HttpMethod.PATCH, path, handler, hook)
+    }
+    return this.add(HttpMethod.PATCH, path, handler.handler as InlineHandler<any, any>, handler.hook)
+  }
 
   public getRoutes = () => this._routes
 
