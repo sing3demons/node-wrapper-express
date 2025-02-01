@@ -177,12 +177,10 @@ const framework = {
 
 export default class AppServer extends AppRouter {
   public instance: Application | null = null
-  private readonly express: Express
-  constructor() {
+  constructor(private readonly _express = express()) {
     super()
 
-    this.express = express()
-    this.express.use((req: Request, _res: Response, next: NextFunction) => {
+    this._express.use((req: Request, _res: Response, next: NextFunction) => {
       const agent = useragent.parse(req.headers['user-agent'] || '')
 
       if (!req.headers['x-session']) {
@@ -196,10 +194,10 @@ export default class AppServer extends AppRouter {
       next()
     })
 
-    this.express.use(express.json())
-    this.express.use(express.urlencoded({ extended: true }))
-    this.express.use(cookieParser())
-    this.instance = this.express
+    this._express.use(express.json())
+    this._express.use(express.urlencoded({ extended: true }))
+    this._express.use(cookieParser())
+    this.instance = this._express
   }
 
   public router(router: AppRouter) {
@@ -277,8 +275,8 @@ export default class AppServer extends AppRouter {
 
   public register() {
     this._routes.forEach(({ method, path, handler, hook }) => {
-      if (this.express) {
-        this.express.route(path)[method](async (req: Request, res: Response, next: NextFunction) => {
+      if (this._express) {
+        this._express.route(path)[method](async (req: Request, res: Response, next: NextFunction) => {
           const ctx = this.createContext(req, res)
           const schemas = hook?.schema || {}
           const schema = this.validatorFactory(ctx, schemas)
@@ -313,18 +311,18 @@ export default class AppServer extends AppRouter {
 
     this._routes.length = 0
 
-    return this.express as Express
+    return this._express as Express
   }
 
   public listen(port: number, callback: (err?: Error) => void) {
-    if (!this.express) {
+    if (!this._express) {
       throw new Error('App is not initialized')
     }
-    if (this.express) {
+    if (this._express) {
       if (this._routes.length !== 0) {
         this.register()
       }
-      const server = http.createServer(this.express).listen(port, callback)
+      const server = http.createServer(this._express).listen(port, callback)
 
       const connections = new Set<Socket>()
       server.on('connection', (connection) => {
