@@ -368,6 +368,49 @@ export type Context<Route extends CtxSchema = {}, Path extends string | undefine
   route: string
 }>
 
+export type Ctx<Route extends CtxSchema = {}> = Prettify<{
+  body: undefined extends Route['body']
+    ? Record<string, unknown>
+    : Route['body'] extends TObject
+    ? Static<Route['body']>
+    : never
+
+  query: undefined extends Route['query']
+    ? Record<string, string | undefined>
+    : Route['query'] extends TObject
+    ? Static<Route['query']>
+    : never
+
+  params: undefined extends Route['params']
+    ? Record<string, string>
+    : Route['params'] extends TObject
+    ? Static<Route['params']>
+    : never
+
+  headers: undefined extends Route['headers']
+    ? Record<string, string | undefined>
+    : Route['headers'] extends TObject
+    ? Static<Route['headers']>
+    : never
+
+  redirect: Redirect
+
+  set: {
+    headers: HTTPHeaders
+    status?: number | keyof StatusMap
+    redirect?: string
+    cookie?: Record<string, Cookie>
+  }
+
+  response(
+    status: number | keyof StatusMap,
+    body: undefined extends Route['response'] ? unknown : Route['response'][keyof Route['response']]
+  ): void
+
+  path: string
+  route: string
+}>
+
 export type RouteHandler<Route extends CtxSchema = {}, Path extends string | undefined = undefined> = (
   context: Context<Route, Path>
 ) => Promise<unknown>
@@ -390,6 +433,8 @@ export type InlineHandler<Route extends CtxSchema = {}, Path extends string | un
   | RouteHandler<Route, Path>
   | RouteHandler<Route, Path>[]
 
+export type CustomHandler<Route extends CtxSchema = {}> = (context: Ctx<Route>) => Promise<unknown>
+
 export type MiddlewareRoute<Route extends CtxSchema> = {
   before?: HigherOrderFunction
   after?: HigherOrderFunction
@@ -402,7 +447,6 @@ export type InternalRoute = {
   handler: RouteHandler<any, any> | RouteHandler<any, any>[] | any
   hook?: MiddlewareRoute<any>
 }
-
 
 export type ContainsWhitespace<T extends string> = T extends
   | `${string} ${string}`
