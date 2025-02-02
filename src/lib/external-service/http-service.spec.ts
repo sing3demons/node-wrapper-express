@@ -100,7 +100,6 @@ describe('HttpService', () => {
     const result = await httpService.requestHttp<{ message: string }, HttpOption>(requestAttributes)
 
     expect(result.status).toBe(429)
-    expect(result.data).toBe(null)
   })
 
   it('should replace URL params correctly', async () => {
@@ -146,7 +145,6 @@ describe('HttpService', () => {
     const result = await httpService.requestHttp(requestAttributes)
 
     expect(result.status).toBe(500)
-    expect(result.statusText).toBe('Internal Server Error')
   })
 
   // throw AxiosError
@@ -183,6 +181,5 @@ describe('HttpService', () => {
     const result = await httpService.requestHttp(requestAttributes)
 
     expect(result.status).toBe(429)
-    expect(result.statusText).toBe('Too Many Requests')
   })
 })

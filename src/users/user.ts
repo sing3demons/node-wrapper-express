@@ -1,3 +1,4 @@
+import HttpService, { HttpOption } from '@/lib/external-service/http-service'
 import { Router } from '@/lib/serve'
 import mongoose from 'mongoose'
 
@@ -22,6 +23,19 @@ userRouter.post('/', async (ctx) => {
   await user.save()
 
   ctx.response(201, user)
+})
+
+userRouter.get('/:id', async (ctx) => {
+  const userApi = new HttpService()
+
+  const options: HttpOption = {
+    url: 'http://localhost:3001/users/:id',
+    method: 'GET',
+    params: { id: ctx.params.id },
+  }
+
+  const user = await userApi.requestHttp(options)
+  ctx.response(user.status, user.data)
 })
 
 export default userRouter.Router('users')

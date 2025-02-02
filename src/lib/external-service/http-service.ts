@@ -7,6 +7,7 @@ import axios, {
   AxiosResponseHeaders,
 } from 'axios'
 import axiosRetry, { IAxiosRetryConfig } from 'axios-retry'
+import https from 'https'
 
 const http_method = ['GET', 'POST', 'PUT', 'DELETE'] as const
 type HTTP_METHOD = (typeof http_method)[number]
@@ -23,14 +24,13 @@ type HttpOption = {
   timeout?: number
   url: string
   auth?: AxiosBasicCredentials
+  axiosRequestConfig?: AxiosRequestConfig
 }
 
 type ApiResponse<B extends unknown> = {
-  data: B
-  headers: AxiosResponseHeaders | undefined
+  data?: B
+  headers?: object
   status: number
-  statusText: string
-  config: AxiosRequestConfig | undefined
 }
 
 type RA = HttpOption | HttpOption[]
@@ -66,9 +66,21 @@ class HttpService implements IHttpService {
     const requests: Promise<AxiosResponse<any, any>>[] = []
 
     function processOptionAttributes(request: HttpOption) {
-      const { headers, method, params, query, body, retry_condition, retry_count, timeout, url, auth } = request
-
+      const {
+        headers,
+        method,
+        params,
+        query,
+        body,
+        retry_condition,
+        retry_count,
+        timeout,
+        url,
+        auth,
+        axiosRequestConfig,
+      } = request
       const config: AxiosRequestConfig = {
+        ...axiosRequestConfig,
         headers,
         method,
         url: params ? replaceUrlParam(url, params) : url,
@@ -108,11 +120,9 @@ class HttpService implements IHttpService {
     if (returnObjFlag) {
       const result = await requests.pop()
       const response: ReturnPromise<T, B> = {
-        config: result?.config,
         data: result?.data,
         headers: (result?.headers as AxiosResponseHeaders) ?? {},
         status: result?.status,
-        statusText: result?.statusText,
       } as ReturnPromise<T, B>
       return response
     }
@@ -120,7 +130,7 @@ class HttpService implements IHttpService {
     const result: AxiosResponse<B, B>[] = await Promise.all(requests)
     requests.length = 0
 
-    return result as ReturnPromise<T, B>
+    return result as unknown as ReturnPromise<T, B>
   }
 }
 
@@ -141,38 +151,38 @@ function replaceUrlParam(url: string, params: TMap) {
 }
 
 async function makeRequest(config: AxiosRequestConfig): Promise<AxiosResponse> {
+  const response: ApiResponse<any> = {
+    status: 200,
+    headers: undefined,
+  }
   try {
-    return await axios.request(config)
-  } catch (error) {
-    console.error('Caught Error:', error); // Debugging
+    const result = await axios.request(config)
+    response.data = result.data
+    response.headers = result.headers
+    response.status = result.status
 
+    return response as unknown as AxiosResponse
+  } catch (error) {
     if (error instanceof AxiosError) {
-      return {
-        data: error.response?.data ?? {},
-        headers: error.response?.headers ?? {},
-        status: error.response?.status ?? 500,
-        statusText: error.response?.statusText ?? error.message,
-        config: error.config ?? {},
-      } as AxiosResponse
+      response.data = error.response?.data ?? error.message
+      response.headers = error.response?.headers
+      response.status = error.response?.status ?? 500
     } else if (error instanceof Error) {
+      response.data = error?.message
+      response.status = 500
       return {
         data: error.message,
         headers: {},
         status: 500,
-        statusText: 'Internal Server Error',
-        config: {},
-      } as AxiosResponse
+      } as unknown as AxiosResponse
+    } else {
+      const err = error as AxiosError
+      response.data = err?.message
+      response.headers = err?.response?.headers
+      response.status = err?.response?.status ?? 500
     }
 
-    const err = error as AxiosError
-
-    return {
-      data: null,
-      headers: err?.response?.headers ?? {},
-      status: err?.response?.status ?? 500,
-      statusText: 'Internal Server Error',
-      config: {},
-    } as AxiosResponse
+    return response as unknown as AxiosResponse
   }
 }
 
