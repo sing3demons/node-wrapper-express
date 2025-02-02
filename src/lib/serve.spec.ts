@@ -208,13 +208,6 @@ describe('Server test', () => {
       expect(response.status).toBe(400)
     })
 
-    // x?name=1
-    //   it('should return 200 when get x with query', async () => {
-    //     const response = await supertest(app).get('/x?name=1')
-    //     expect(response.status).toBe(400)
-    //   })
-
-    // x with header
     it('should return 200 when get x with header', async () => {
       const response = await supertest(app).get('/x').set('x-api-key', '12')
       expect(response.status).toBe(400)
@@ -276,6 +269,16 @@ describe('Server test', () => {
     it('should return 200 when get product', async () => {
       const response = await supertest(server.register()).get('/group/xzx')
       expect(response.status).toBe(200)
+    })
+
+    // url not found
+    it('should return 404 when url not found', async () => {
+      const response = await supertest(server.register()).get('/group/xz/xx')
+      expect(response.status).toBe(404)
+      expect(response.body).toEqual({
+        desc: 'not_found',
+        data: { method: 'GET', url: '/group/xz/xx' },
+      })
     })
   })
 })

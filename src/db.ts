@@ -6,7 +6,6 @@ class MongoDb {
 
   constructor() {
     this._client = new MongoClient(this.url)
-    console.log('MongoDb class instantiated')
   }
 
   async connect() {

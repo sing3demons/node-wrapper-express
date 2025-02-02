@@ -1,4 +1,4 @@
-import express, { type Request, type Response, type NextFunction, type Express, Application } from 'express'
+import express, { type Request, type Response, type NextFunction } from 'express'
 import {
   CtxSchema,
   HttpMethod,
@@ -10,12 +10,10 @@ import {
   CustomHandler,
   CustomRouteDefinition,
 } from './context'
-import { TObject, Type } from '@sinclair/typebox'
-import useragent from 'useragent'
+import { TObject } from '@sinclair/typebox'
 import { v4, v7 } from 'uuid'
 import { TypeCompiler } from '@sinclair/typebox/compiler'
 import cookieParser from 'cookie-parser'
-import { Socket } from 'net'
 import http from 'http'
 
 export const HandlerSchema = <T extends CtxSchema>(handler: CustomHandler<T>, hook?: MiddlewareRoute<T>) => ({
@@ -62,7 +60,12 @@ export class AppRouter implements IAppRouter {
   protected _routes: InternalRoute[] = []
 
   private add(method: HttpMethod, path: string, handler: InlineHandler<any, any>, hook?: MiddlewareRoute<any>) {
-    this._routes.push({ method, path: path.startsWith('/') ? path : `/${path}`, handler, hook })
+    this._routes.push({
+      method,
+      path: path.replace(/\/+$/, '').replace(/^([^/])/, '/$1'),
+      handler,
+      hook,
+    })
     return this
   }
 
@@ -176,13 +179,12 @@ const framework = {
 } as const
 
 export default class AppServer extends AppRouter {
-  public instance: Application | null = null
-  constructor(private readonly _express = express()) {
+  private readonly instance = express()
+  constructor() {
     super()
 
-    this._express.use((req: Request, _res: Response, next: NextFunction) => {
-      const agent = useragent.parse(req.headers['user-agent'] || '')
-
+    this.instance.use((req: Request, _res: Response, next: NextFunction) => {
+      // const agent = useragent.parse(req.headers['user-agent'] || '')
       if (!req.headers['x-session']) {
         req.headers['x-session'] = v4()
       }
@@ -194,10 +196,9 @@ export default class AppServer extends AppRouter {
       next()
     })
 
-    this._express.use(express.json())
-    this._express.use(express.urlencoded({ extended: true }))
-    this._express.use(cookieParser())
-    this.instance = this._express
+    this.instance.use(express.json())
+    this.instance.use(express.urlencoded({ extended: true }))
+    this.instance.use(cookieParser())
   }
 
   public router(router: AppRouter) {
@@ -267,50 +268,60 @@ export default class AppServer extends AppRouter {
 
   public register() {
     this._routes.forEach(({ method, path, handler, hook }) => {
-      if (this._express) {
-        this._express.route(path)[method](async (req: Request, res: Response, next: NextFunction) => {
-          const ctx = this.createContext(req, res)
-          const schemas = hook?.schema || {}
-          const schema = this.validatorFactory(ctx, schemas)
-          if (schema.err) {
-            res.status(400).json({
-              desc: schema.desc,
-              data: schema.data,
-            })
-            return next()
-          }
+      this.instance.route(path)[method](async (req: Request, res: Response, next: NextFunction) => {
+        const ctx = this.createContext(req, res)
+        const schemas = hook?.schema || {}
+        const schema = this.validatorFactory(ctx, schemas)
+        if (schema.err) {
+          res.status(400).json({
+            desc: schema.desc,
+            data: schema.data,
+          })
+          return next()
+        }
 
-          const result = await handler(ctx)
+        const result = await handler(ctx)
 
-          if (result && ctx.set.headers) {
-            res.set(ctx.set.headers)
-          }
+        if (result && ctx.set.headers) {
+          res.set(ctx.set.headers)
+        }
 
-          if (result && ctx.set.cookie) {
-            res.cookie(ctx.set.cookie.name, ctx.set.cookie.value, ctx.set.cookie.options)
-          }
+        if (result && ctx.set.cookie) {
+          res.cookie(ctx.set.cookie.name, ctx.set.cookie.value, ctx.set.cookie.options)
+        }
 
-          if (result && ctx.set.status) {
-            res.status(ctx.set.status)
-          }
+        if (result && ctx.set.status) {
+          res.status(ctx.set.status)
+        }
 
-          if (result) {
-            res.json(result)
-          }
-        })
-      }
+        if (result) {
+          res.json(result)
+        }
+      })
     })
 
     this._routes.length = 0
 
-    return this._express as Express
+    // url not found
+    this.instance.use((req: Request, res: Response) => {
+      res.status(404).json({
+        desc: 'not_found',
+        data: {
+          url: req.url,
+          method: req.method,
+        },
+      })
+    })
+
+    return this.instance
   }
 
   public listen(port: number, callback?: (err?: Error) => void) {
     if (this._routes.length !== 0) {
       this.register()
     }
-    const server = http.createServer(this._express).listen(port, callback)
+
+    const server = http.createServer(this.instance).listen(port, callback)
 
     const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT'] as const
     signals.forEach((signal) => {

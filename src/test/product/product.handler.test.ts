@@ -2,9 +2,12 @@ import supertest from 'supertest'
 import server from '../../server'
 import ProductService from '@/product/product.service'
 
-const app = server.register()
-
 describe('Product Handler', () => {
+  beforeAll(() => {
+   jest.clearAllMocks()
+   jest.restoreAllMocks()
+  })
+  const app = server.register()
   it('should return 200 when get product', async () => {
     const sp = jest
       .spyOn(ProductService.prototype, 'getProducts')
