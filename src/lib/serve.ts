@@ -253,7 +253,11 @@ export default class AppServer extends AppRouter {
       headers: req.headers,
       params: req.params,
       query: req.query,
-      response: (code: number, data: unknown) => {
+      response: (code: number, data: unknown, headers?: Record<string, unknown>) => {
+        if (headers && Object.keys(headers).length > 0) {
+          res.set(headers)
+        }
+
         res.status(code).send(data)
       },
       set: {

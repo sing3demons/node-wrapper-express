@@ -361,7 +361,8 @@ export type Context<Route extends CtxSchema = {}, Path extends string | undefine
 
   response(
     status: number | keyof StatusMap,
-    body: undefined extends Route['response'] ? unknown : Route['response'][keyof Route['response']]
+    body: undefined extends Route['response'] ? unknown : Route['response'][keyof Route['response']],
+    headers?: HTTPHeaders
   ): void
 
   path: string
@@ -404,7 +405,8 @@ export type Ctx<Route extends CtxSchema = {}> = Prettify<{
 
   response(
     status: number | keyof StatusMap,
-    body: undefined extends Route['response'] ? unknown : Route['response'][keyof Route['response']]
+    body: undefined extends Route['response'] ? unknown : Route['response'][keyof Route['response']],
+    headers?: HTTPHeaders
   ): void
 
   path: string
