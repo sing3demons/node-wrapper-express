@@ -3,8 +3,6 @@ import AppServer, { Router } from './serve'
 import express from 'express'
 import { Socket } from 'net'
 import { Type } from '@sinclair/typebox'
-import supertest from 'supertest'
-import { TypeCompiler } from '@sinclair/typebox/build/cjs/compiler'
 
 // Mock express to return a function with necessary methods, including json()
 jest.mock('express', () => {
@@ -72,7 +70,7 @@ describe('Serve listen', () => {
     appServer.router(appRouter)
 
     server = appServer.listen(3000, () => {
-        console.log('Server listening on port 3000')
+      console.log('Server listening on port 3000')
     })
   })
 
