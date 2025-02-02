@@ -1,16 +1,26 @@
-import { Db, MongoClient } from 'mongodb'
+import { MongoClient } from 'mongodb'
 
-const client = new MongoClient('mongodb://localhost:27017')
+class MongoDb {
+  private url = process.env.MONGO_URL || 'mongodb://localhost:27017'
+  private readonly _client: MongoClient
 
-export async function initMongo() {
-  try {
-    await client.connect()
-    console.log('Connected to MongoDB')
-  } catch (error) {
-    console.error('Error while connecting to MongoDB', error)
+  constructor() {
+    this._client = new MongoClient(this.url)
+    console.log('MongoDb class instantiated')
+  }
+
+  async connect() {
+    try {
+      await this._client.connect()
+      console.log('Connected to MongoDB')
+    } catch (error) {
+      console.error('Error connecting to MongoDB:', error)
+    }
+  }
+
+  get client() {
+    return this._client
   }
 }
 
-export const getMongoClient = (name: string): Db => {
-  return client.db(name)
-}
+export default new MongoDb()

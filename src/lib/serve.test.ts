@@ -4,7 +4,7 @@ import { Type } from '@sinclair/typebox'
 
 const router = Router()
 
-router.get('/', async (ctx) => {
+router.get('', async (ctx) => {
   ctx.response(200, 'Hello World')
 })
 

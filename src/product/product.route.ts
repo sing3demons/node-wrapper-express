@@ -1,10 +1,10 @@
 import { Router } from '@/lib/serve'
 import ProductHandler from './product.handler'
 import ProductService from './product.service'
-import { getMongoClient } from '@/db'
+import mongoClient from '@/db'
 import ProductRepository from './product.repository'
 
-const productDb = getMongoClient('product')
+const productDb = mongoClient.client.db('product')
 const productCollection = productDb.collection('product')
 const productRepository = new ProductRepository(productCollection)
 const productService = new ProductService(productRepository)

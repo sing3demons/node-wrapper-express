@@ -324,8 +324,6 @@ export default class AppServer extends AppRouter {
 
         setTimeout(() => {
           console.log('Could not close server in time. Forcing shutdown.')
-
-          callback?.()
           process.exit(1)
         }, 10000)
       })

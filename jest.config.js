@@ -14,7 +14,7 @@ const config = {
   coverageReporters: ['text', 'lcov', 'clover', 'html'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/', '/.git/'],
   moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1"
+    '^@/(.*)$': '<rootDir>/src/$1',
   }
 }
 
