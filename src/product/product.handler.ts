@@ -1,19 +1,20 @@
 import { IProductService } from './product.service'
 import { createProductSchema } from './product.model'
 import { HandlerSchema } from '@/lib/serve'
+import { statusMap } from '@/lib/context'
 
 export default class ProductHandler {
   constructor(private readonly productService: IProductService) {}
 
   public getProduct = HandlerSchema(async (ctx) => {
     const products = await this.productService.getProducts()
-    ctx.response(200, products)
+    ctx.response(statusMap.OK, products)
   })
 
   public createProduct = HandlerSchema(
     async (ctx) => {
       const product = await this.productService.createProduct(ctx.body)
-      ctx.response(201, product)
+      ctx.response(statusMap.Created, product)
     },
     {
       schema: {
@@ -25,9 +26,9 @@ export default class ProductHandler {
   public getProductById = HandlerSchema(async (ctx) => {
     const product = await this.productService.getProductById(ctx.params.id)
     if (!product) {
-      ctx.response(404, { message: 'Product not found' })
+      ctx.response(statusMap.NotFound, { message: 'Product not found' })
       return
     }
-    ctx.response(200, product)
+    ctx.response(statusMap.OK, product)
   })
 }
