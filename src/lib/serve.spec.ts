@@ -224,7 +224,9 @@ describe('Server test', () => {
     router.get(
       '/xx',
       async (ctx) => {
-        ctx.response(200, 'Hello World')
+        ctx.response(200, 'Hello World', {
+          "x-api-key": ctx.headers['x-api-key'] || '1vcxvcbfkkkkkhfngxnfnvnb2',
+        })
       },
       {
         schema: {
