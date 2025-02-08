@@ -1,8 +1,8 @@
-import { Router } from '@/lib/serve'
-import ProductHandler from './product.handler'
+ import ProductHandler from './product.handler'
 import ProductService from './product.service'
-import mongoClient from '@/db'
+import mongoClient from '../db'
 import ProductRepository from './product.repository'
+import { Router } from '@node-express-kp/sing3demons'
 
 const productDb = mongoClient.client.db('product')
 const productCollection = productDb.collection('product')

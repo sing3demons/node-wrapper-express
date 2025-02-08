@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@node-express-kp/sing3demons':
+        specifier: github:sing3demons/node-express-kp#main
+        version: '@sing3demons/node-express-kp@https://codeload.github.com/sing3demons/node-express-kp/tar.gz/fc126329f354f92ce6030d46df061f31bfa42614'
       '@sinclair/typebox':
         specifier: ^0.34.14
         version: 0.34.14
@@ -510,6 +513,13 @@ packages:
 
   '@sinclair/typebox@0.34.14':
     resolution: {integrity: sha512-TJ7Al17j3+by5y2QkTLcF/oBVMbgXBhILVgi9PuwpxQVZZvGh5BFRzWbJPmZVNKpbRLjuMzFuRwR+tdFPqCkvA==}
+
+  '@sinclair/typebox@0.34.16':
+    resolution: {integrity: sha512-rIljj8VPYAfn26ANY+5pCNVBPiv6hSufuKGe46y65cJZpvx8vHvPXlU0Q/Le4OGtlNaL8Jg2FuhtvQX18lSIqA==}
+
+  '@sing3demons/node-express-kp@https://codeload.github.com/sing3demons/node-express-kp/tar.gz/fc126329f354f92ce6030d46df061f31bfa42614':
+    resolution: {tarball: https://codeload.github.com/sing3demons/node-express-kp/tar.gz/fc126329f354f92ce6030d46df061f31bfa42614}
+    version: 1.0.5
 
   '@sinonjs/commons@3.0.1':
     resolution: {integrity: sha512-K3mCHKQ9sVh8o1C9cxkwxaOmXoAMlDxC1mYyHrjqOWEcBjYr76t96zL2zlj5dUGZ3HSw240X1qgH3Mjf1yJWpQ==}
@@ -2834,6 +2844,20 @@ snapshots:
   '@sinclair/typebox@0.27.8': {}
 
   '@sinclair/typebox@0.34.14': {}
+
+  '@sinclair/typebox@0.34.16': {}
+
+  '@sing3demons/node-express-kp@https://codeload.github.com/sing3demons/node-express-kp/tar.gz/fc126329f354f92ce6030d46df061f31bfa42614':
+    dependencies:
+      '@sinclair/typebox': 0.34.16
+      axios: 1.7.9
+      axios-retry: 4.5.0(axios@1.7.9)
+      cookie-parser: 1.4.7
+      express: 4.21.2
+      uuid: 11.0.5
+    transitivePeerDependencies:
+      - debug
+      - supports-color
 
   '@sinonjs/commons@3.0.1':
     dependencies:

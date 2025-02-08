@@ -2,6 +2,7 @@
   "name": "mongoose",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "jest --coverage",
     "dev": "tsx watch src/index.ts",
@@ -30,6 +31,7 @@
     "typescript": "^5.4.3"
   },
   "dependencies": {
+    "@node-express-kp/sing3demons": "github:sing3demons/node-express-kp#main",
     "@sinclair/typebox": "^0.34.14",
     "axios": "^1.7.9",
     "axios-retry": "^4.5.0",

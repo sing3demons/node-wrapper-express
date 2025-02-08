@@ -24,7 +24,8 @@
     "typeRoots": ["src/typings", "./node_modules/@types/"],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "allowSyntheticDefaultImports": true,
   },
   "include": ["src/**/*"],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
