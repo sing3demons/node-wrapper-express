@@ -1,4 +1,4 @@
-import { Collection, MongoClient, MongoServerError, ObjectId } from 'mongodb'
+import { Collection,  MongoServerError, ObjectId } from 'mongodb'
 import ProductRepository, { IProductRepository } from '../../product/product.repository'
 // import { mock } from 'jest-mock-extended'
 

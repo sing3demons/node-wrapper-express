@@ -2,6 +2,7 @@ import { IProductService } from './product.service'
 import { createProductSchema } from './product.model'
 import { HandlerSchema } from '@/lib/serve'
 import { statusMap } from '@/lib/context'
+import { Type } from '@sinclair/typebox'
 
 export default class ProductHandler {
   constructor(private readonly productService: IProductService) {}
@@ -23,12 +24,21 @@ export default class ProductHandler {
     }
   )
 
-  public getProductById = HandlerSchema(async (ctx) => {
-    const product = await this.productService.getProductById(ctx.params.id)
-    if (!product) {
-      ctx.response(statusMap.NotFound, { message: 'Product not found' })
-      return
+  public getProductById = HandlerSchema(
+    async (ctx) => {
+      const product = await this.productService.getProductById(ctx.params.id)
+      if (!product) {
+        ctx.response(statusMap.NotFound, { message: 'Product not found' })
+        return
+      }
+      ctx.response(statusMap.OK, product)
+    },
+    {
+      schema: {
+        params: Type.Object({
+          id: Type.String(),
+        }),
+      },
     }
-    ctx.response(statusMap.OK, product)
-  })
+  )
 }

@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios'
-import axiosRetry from 'axios-retry'
-import HttpService, { HttpOption, ApiResponse } from './http-service'
+import HttpService, { HttpOption } from './http-service'
 
 jest.mock('axios')
 jest.mock('axios-retry')
@@ -123,7 +122,7 @@ describe('HttpService', () => {
       retry_count: 2,
     }
 
-    const result = await httpService.requestHttp(requestAttributes)
+    await httpService.requestHttp(requestAttributes)
 
     expect(axios.request).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -170,7 +169,6 @@ describe('HttpService', () => {
       data: { error: 'Rate limit exceeded' },
       config: {},
     } as any
-
     ;(axios.request as jest.Mock).mockRejectedValueOnce(mockError)
 
     const requestAttributes: HttpOption = {

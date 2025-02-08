@@ -1,7 +1,7 @@
 import supertest from 'supertest'
 import server from '../../server'
-import ProductService from '@/product/product.service'
-
+import ProductService from '../../product/product.service'
+ 
 describe('Product Handler', () => {
   beforeAll(() => {
    jest.clearAllMocks()

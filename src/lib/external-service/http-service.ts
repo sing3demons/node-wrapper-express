@@ -7,8 +7,7 @@ import axios, {
   AxiosResponseHeaders,
 } from 'axios'
 import axiosRetry, { IAxiosRetryConfig } from 'axios-retry'
-import https from 'https'
-
+ 
 const http_method = ['GET', 'POST', 'PUT', 'DELETE'] as const
 type HTTP_METHOD = (typeof http_method)[number]
 type TMap = { [key: string]: string }

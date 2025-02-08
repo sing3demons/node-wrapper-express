@@ -1,4 +1,4 @@
-import express, { type Request, type Response, type NextFunction } from 'express'
+import express, { type Request, type Response, type NextFunction, Application } from 'express'
 import {
   CtxSchema,
   HttpMethod,
@@ -168,16 +168,6 @@ export class AppRouter implements IAppRouter {
   }
 }
 
-enum Framework {
-  EXPRESS = 'express',
-  FASTIFY = 'fastify',
-}
-
-const framework = {
-  express: Framework.EXPRESS,
-  fastify: Framework.FASTIFY,
-} as const
-
 export default class AppServer extends AppRouter {
   private readonly instance = express()
   constructor() {
@@ -270,7 +260,7 @@ export default class AppServer extends AppRouter {
     return contest
   }
 
-  public register() {
+  public register(): Application {
     this._routes.forEach(({ method, path, handler, hook }) => {
       this.instance.route(path)[method](async (req: Request, res: Response, next: NextFunction) => {
         const ctx = this.createContext(req, res)

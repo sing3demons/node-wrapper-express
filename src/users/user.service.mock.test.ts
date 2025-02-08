@@ -1,5 +1,5 @@
 import axios from 'axios'
-import UserService, { User } from './user.service'
+import UserService from './user.service'
 import { mockUsers } from './user.mock'
 
 jest.mock('axios')

@@ -1,5 +1,5 @@
 import { createProductDTO, IProduct } from './product.model'
-import ProductRepository, { IProductRepository } from './product.repository'
+import { IProductRepository } from './product.repository'
 
 export interface IProductService {
   createProduct(body: createProductDTO): Promise<IProduct>
