@@ -1,8 +1,7 @@
 import { IProductService } from './product.service'
 import { createProductSchema } from './product.model'
-import { HandlerSchema } from '@/lib/serve'
-import { statusMap } from '@/lib/context'
 import { Type } from '@sinclair/typebox'
+import { HandlerSchema, statusMap } from '@node-express-kp/sing3demons'
 
 export default class ProductHandler {
   constructor(private readonly productService: IProductService) {}
