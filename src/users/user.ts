@@ -1,5 +1,4 @@
-import HttpService, { HttpOption } from '@/lib/external-service/http-service'
-import { Router } from '@/lib/serve'
+import { HttpOption, HttpService, Router } from '@node-express-kp/sing3demons'
 import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({

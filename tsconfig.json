@@ -2,11 +2,11 @@
   "compilerOptions": {
     "lib": ["ESNext"],
     "target": "ES6",
-    "outDir": "lib",
+    "outDir": "./dist",
     "removeComments": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
+    "module": "CommonJS",
     "rootDir": "./src",
     "moduleResolution": "node",
     "allowJs": true,

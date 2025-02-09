@@ -1,8 +1,8 @@
 import request from 'supertest'
 import server from '../server'
 import { UserModel } from './user'
-import HttpService from '@/lib/external-service/http-service'
-
+import { HttpService } from '@node-express-kp/sing3demons'
+ 
 const app = server.register()
 describe('User', () => {
   afterAll(async () => {
